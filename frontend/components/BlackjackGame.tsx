@@ -205,6 +205,11 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
   const { isConnected } = useAccount();
 
   const deckRef = useRef<Card[]>([]);
+  const stateRef = useRef({ playerHand, splitHand, wager, splitWager, splitActive });
+
+  useEffect(() => {
+    stateRef.current = { playerHand, splitHand, wager, splitWager, splitActive };
+  }, [playerHand, splitHand, wager, splitWager, splitActive]);
 
   // Save balance to localStorage
   useEffect(() => {
@@ -398,68 +403,8 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     setPhase("player");
   }, [phase, playerHand, balance, wager]);
 
-  // ── Dealer Turn ────────────────────────────────────────────────────────
-  const runDealerTurnFromState = useCallback(() => {
-    setPhase("dealer");
-    setDealerRevealed(true);
-    setTimeout(() => runDealerLoop(), 600);
-  }, []);
-
-  // Dealer loop using recursive setTimeout
-  const runDealerLoop = useCallback(() => {
-    setDealerHand((prev) => {
-      const total = calcTotal(prev);
-      if (total < 17) {
-        const card = deckRef.current.pop()!;
-        setDeck([...deckRef.current]);
-        const next = [...prev, card];
-        setTimeout(() => runDealerLoop(), 800);
-        return next;
-      } else {
-        // Dealer stands — resolve
-        setTimeout(() => resolveGame(prev), 600);
-        return prev;
-      }
-    });
-  }, []);
-
-  const runDealerTurn = useCallback((
-    dHand: Card[], pHand: Card[], spHand: Card[],
-    isSplit: boolean, pw: number, sw: number
-  ) => {
-    setPhase("dealer");
-    setDealerRevealed(true);
-
-    const dealerDraw = (current: Card[]): Card[] => {
-      const total = calcTotal(current);
-      if (total < 17) {
-        const card = deckRef.current.pop()!;
-        setDeck([...deckRef.current]);
-        return dealerDraw([...current, card]);
-      }
-      return current;
-    };
-
-    setTimeout(() => {
-      const finalDealer = dealerDraw(dHand);
-      setDealerHand(finalDealer);
-      setTimeout(() => resolveGameDirect(finalDealer, pHand, spHand, isSplit, pw, sw), 600);
-    }, 600);
-  }, []);
-
   // ── Resolution ─────────────────────────────────────────────────────────
-  const resolveGame = useCallback((finalDealerHand: Card[]) => {
-    // Read current hands from state — call the direct version
-    setPlayerHand((pHand) => {
-      setSplitHand((spHand) => {
-        resolveGameDirect(finalDealerHand, pHand, spHand, splitActive, wager, splitWager);
-        return spHand;
-      });
-      return pHand;
-    });
-  }, [splitActive, wager, splitWager]);
-
-  const resolveGameDirect = useCallback((
+  const resolveGameDirect = (
     dHand: Card[], pHand: Card[], spHand: Card[],
     isSplit: boolean, pw: number, sw: number
   ) => {
@@ -516,7 +461,60 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     setSessionPushes((p) => p + pushes);
     setBiggestWin((bw) => Math.max(bw, maxWin));
     setHandsPlayed((h) => h + (isSplit ? 2 : 1));
-  }, []);
+  };
+
+  const resolveGame = (finalDealerHand: Card[]) => {
+    const { playerHand: pHand, splitHand: spHand, splitActive: isSplit, wager: pw, splitWager: sw } = stateRef.current;
+    resolveGameDirect(finalDealerHand, pHand, spHand, isSplit, pw, sw);
+  };
+
+  // ── Dealer Turn ────────────────────────────────────────────────────────
+  const runDealerLoop = () => {
+    setDealerHand((prev) => {
+      const total = calcTotal(prev);
+      if (total < 17) {
+        const card = deckRef.current.pop()!;
+        setDeck([...deckRef.current]);
+        const next = [...prev, card];
+        setTimeout(() => runDealerLoop(), 800);
+        return next;
+      } else {
+        // Dealer stands — resolve
+        setTimeout(() => resolveGame(prev), 600);
+        return prev;
+      }
+    });
+  };
+
+  const runDealerTurnFromState = () => {
+    setPhase("dealer");
+    setDealerRevealed(true);
+    setTimeout(() => runDealerLoop(), 600);
+  };
+
+  const runDealerTurn = (
+    dHand: Card[], pHand: Card[], spHand: Card[],
+    isSplit: boolean, pw: number, sw: number
+  ) => {
+    setPhase("dealer");
+    setDealerRevealed(true);
+
+    const dealerDraw = (current: Card[]): Card[] => {
+      const total = calcTotal(current);
+      if (total < 17) {
+        const card = deckRef.current.pop()!;
+        setDeck([...deckRef.current]);
+        return dealerDraw([...current, card]);
+      }
+      return current;
+    };
+
+    setTimeout(() => {
+      const finalDealer = dealerDraw(dHand);
+      setDealerHand(finalDealer);
+      setTimeout(() => resolveGameDirect(finalDealer, pHand, spHand, isSplit, pw, sw), 600);
+    }, 600);
+  };
 
   // ── New hand / Reset ───────────────────────────────────────────────────
   const newHand = useCallback(() => {
