@@ -1,0 +1,88 @@
+export const BLACKJACK_ABI = [
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'wins',       type: 'uint256' },
+      { internalType: 'uint256', name: 'losses',     type: 'uint256' },
+      { internalType: 'uint256', name: 'pushes',     type: 'uint256' },
+      { internalType: 'uint256', name: 'biggestWin', type: 'uint256' },
+      { internalType: 'string',  name: 'nickname',   type: 'string'  },
+    ],
+    name: 'submitResult',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getTopPlayers',
+    outputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'player',     type: 'address' },
+          { internalType: 'string',  name: 'nickname',   type: 'string'  },
+          { internalType: 'uint256', name: 'wins',       type: 'uint256' },
+          { internalType: 'uint256', name: 'losses',     type: 'uint256' },
+          { internalType: 'uint256', name: 'pushes',     type: 'uint256' },
+          { internalType: 'uint256', name: 'biggestWin', type: 'uint256' },
+          { internalType: 'uint256', name: 'timestamp',  type: 'uint256' },
+        ],
+        internalType: 'struct BlackjackLeaderboard.LeaderEntry[10]',
+        name: '',
+        type: 'tuple[10]',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'player', type: 'address' }],
+    name: 'getPlayerStats',
+    outputs: [
+      {
+        components: [
+          { internalType: 'uint256', name: 'wins',       type: 'uint256' },
+          { internalType: 'uint256', name: 'losses',     type: 'uint256' },
+          { internalType: 'uint256', name: 'pushes',     type: 'uint256' },
+          { internalType: 'uint256', name: 'biggestWin', type: 'uint256' },
+          { internalType: 'uint256', name: 'totalGames', type: 'uint256' },
+          { internalType: 'uint256', name: 'lastSubmit', type: 'uint256' },
+          { internalType: 'string',  name: 'nickname',   type: 'string'  },
+        ],
+        internalType: 'struct BlackjackLeaderboard.PlayerStats',
+        name: '',
+        type: 'tuple',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'player', type: 'address' }],
+    name: 'getPlayerRank',
+    outputs: [{ internalType: 'uint8', name: '', type: 'uint8' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'totalPlayers',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true,  internalType: 'address', name: 'player',   type: 'address' },
+      { indexed: false, internalType: 'string',  name: 'nickname', type: 'string'  },
+      { indexed: false, internalType: 'uint256', name: 'wins',     type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'losses',   type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'pushes',   type: 'uint256' },
+    ],
+    name: 'ResultSubmitted',
+    type: 'event',
+  },
+] as const;
+
+export const CONTRACT_ADDRESS = process.env
+  .NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`;
