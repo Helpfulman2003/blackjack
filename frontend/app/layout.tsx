@@ -1,3 +1,4 @@
+// Meta tag for Base App verification is included
 import type { Metadata } from 'next'
 import './globals.css'
 import Providers from '@/components/Providers'
