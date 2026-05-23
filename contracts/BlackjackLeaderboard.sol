@@ -7,6 +7,11 @@ pragma solidity ^0.8.20;
  */
 contract BlackjackLeaderboard {
 
+    // Admin & Fees
+    address public owner;
+    uint256 public gameStartFee = 0.0000003 ether; // ~$0.001 (300 Gwei)
+    uint256 public gameEndFee = 0.0000003 ether;   // ~$0.001 (300 Gwei)
+
     struct PlayerStats {
         uint256 wins;
         uint256 losses;
@@ -38,6 +43,38 @@ contract BlackjackLeaderboard {
     // Events
     event ResultSubmitted(address indexed player, string nickname, uint256 wins, uint256 losses, uint256 pushes);
     event LeaderboardUpdated(uint8 position, address player, uint256 wins);
+    event GameStartPaid(address indexed player, uint256 amount);
+    event GameEndPaid(address indexed player, uint256 amount);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function setFees(uint256 _startFee, uint256 _endFee) external onlyOwner {
+        gameStartFee = _startFee;
+        gameEndFee = _endFee;
+    }
+
+    function payGameStart() external payable {
+        require(msg.value >= gameStartFee, "Insufficient start fee");
+        emit GameStartPaid(msg.sender, msg.value);
+    }
+
+    function payGameEnd() external payable {
+        require(msg.value >= gameEndFee, "Insufficient end fee");
+        emit GameEndPaid(msg.sender, msg.value);
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No balance to withdraw");
+        payable(owner).transfer(balance);
+    }
 
     // ─── Public Functions ────────────────────────────────────────
 

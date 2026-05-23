@@ -1,6 +1,7 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useSignMessage, useAccount } from "wagmi";
+import { useWriteContract, useAccount } from "wagmi";
+import { BLACKJACK_ABI, CONTRACT_ADDRESS } from "@/lib/contract";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Card {
@@ -201,7 +202,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
   const [sessionActive, setSessionActive] = useState(false);
 
   const [toast, setToast] = useState("");
-  const { signMessage, isPending: isSigning } = useSignMessage();
+  const { writeContractAsync, isPending: isSigning } = useWriteContract();
   const { isConnected } = useAccount();
 
   const deckRef = useRef<Card[]>([]);
@@ -236,15 +237,25 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
 
   const clearWager = () => { if (phase === "betting") setWager(0); };
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback(async () => {
     if (wager === 0) { showToast("Place a bet first!"); return; }
     if (balance < wager) { showToast("Insufficient balance!"); return; }
 
-    // 🔏 Auto-sign: game start
+    // 💰 Charge Game Start Fee on-chain (0.0000003 ETH)
     if (isConnected) {
-      signMessage({
-        message: `🃏 Blackjack – Game Start\nNetwork: Base Mainnet\nWager: ${wager} chips\nDate: ${new Date().toUTCString()}`,
-      });
+      try {
+        await writeContractAsync({
+          address: CONTRACT_ADDRESS,
+          abi: BLACKJACK_ABI,
+          functionName: "payGameStart",
+          value: BigInt(300000000000), // 0.0000003 ETH in wei
+        });
+        showToast("✅ Start payment confirmed!");
+      } catch (err: any) {
+        console.error("Game Start Payment failed:", err);
+        showToast("❌ Payment failed! Game cancelled.");
+        return;
+      }
     }
 
     const freshDeck = createShuffledDeck();
@@ -301,7 +312,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     }
 
     setPhase("player");
-  }, [wager, balance, isConnected, signMessage]);
+  }, [wager, balance, isConnected, writeContractAsync]);
 
   // ── Player Actions ─────────────────────────────────────────────────────
   const hit = useCallback(() => {
@@ -549,12 +560,24 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     }
   }, [onSessionEnd, sessionWins, sessionLosses, sessionPushes, biggestWin, handsPlayed]);
 
-  // 🔏 Auto-sign: game end
+  // 💰 Charge Game End Fee on-chain (0.0000003 ETH)
   useEffect(() => {
     if (phase === "over" && isConnected) {
-      signMessage({
-        message: `🏁 Blackjack – Game Over\nNetwork: Base Mainnet\nSession: ${sessionWins}W / ${sessionLosses}L / ${sessionPushes}P\nBest Win: +${biggestWin} chips\nDate: ${new Date().toUTCString()}`,
-      });
+      const payFee = async () => {
+        try {
+          await writeContractAsync({
+            address: CONTRACT_ADDRESS,
+            abi: BLACKJACK_ABI,
+            functionName: "payGameEnd",
+            value: BigInt(300000000000), // 0.0000003 ETH in wei
+          });
+          showToast("✅ End payment confirmed!");
+        } catch (err) {
+          console.error("Game End Payment failed:", err);
+          showToast("❌ End payment failed!");
+        }
+      };
+      payFee();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
