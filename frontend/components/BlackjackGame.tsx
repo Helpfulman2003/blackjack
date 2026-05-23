@@ -1,6 +1,6 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useWriteContract, useAccount } from "wagmi";
+import { useWriteContract, useAccount, useConnect } from "wagmi";
 import { BLACKJACK_ABI, CONTRACT_ADDRESS } from "@/lib/contract";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -204,6 +204,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
   const [toast, setToast] = useState("");
   const { writeContractAsync, isPending: isSigning } = useWriteContract();
   const { isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
 
   const deckRef = useRef<Card[]>([]);
   const stateRef = useRef({ playerHand, splitHand, wager, splitWager, splitActive });
@@ -241,8 +242,26 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     if (wager === 0) { showToast("Place a bet first!"); return; }
     if (balance < wager) { showToast("Insufficient balance!"); return; }
 
+    let walletReady = isConnected;
+    if (!walletReady) {
+      const injectedConnector = connectors.find((c) => c.name === "Injected");
+      if (!injectedConnector) {
+        showToast("❌ MetaMask không khả dụng trong trình duyệt.");
+        return;
+      }
+
+      try {
+        await connect({ connector: injectedConnector });
+        walletReady = true;
+      } catch (err) {
+        console.error("Wallet connect failed:", err);
+        showToast("❌ Không thể mở MetaMask. Hãy kiểm tra extension và thử lại.");
+        return;
+      }
+    }
+
     // 💰 Charge Game Start Fee on-chain (0.0000003 ETH)
-    if (isConnected) {
+    if (walletReady) {
       try {
         await writeContractAsync({
           address: CONTRACT_ADDRESS,
@@ -312,7 +331,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     }
 
     setPhase("player");
-  }, [wager, balance, isConnected, writeContractAsync]);
+  }, [wager, balance, isConnected, writeContractAsync, connect, connectors]);
 
   // ── Player Actions ─────────────────────────────────────────────────────
   const hit = useCallback(() => {

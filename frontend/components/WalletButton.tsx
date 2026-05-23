@@ -5,37 +5,63 @@ import { useState } from "react";
 
 export default function WalletButton() {
   const { address, isConnected, chain } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { connect, connectors, error: connectError, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
   const [showMenu, setShowMenu] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const isWrongChain = isConnected && chain?.id !== baseMainnet.id;
 
+  const handleConnect = async (connector: (typeof connectors)[number]) => {
+    setLocalError(null);
+    try {
+      await connect({ connector });
+    } catch {
+      setLocalError("❌ Không thể mở MetaMask. Hãy kiểm tra extension và thử lại.");
+    }
+  };
+
   if (!isConnected) {
     return (
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-        {connectors.slice(0, 2).map((c) => (
-          <button
-            key={c.id}
-            onClick={() => connect({ connector: c })}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 10,
-              background: "rgba(0,200,100,0.12)",
-              border: "1px solid rgba(0,200,100,0.35)",
-              color: "#00e87a",
-              fontFamily: "'Courier New', monospace",
-              fontSize: 12,
-              cursor: "pointer",
-              fontWeight: "bold",
-              letterSpacing: 1,
-              transition: "all 0.2s",
-            }}
-          >
-            {c.name === "Injected" ? "🦊 MetaMask" : c.name === "Coinbase Wallet" ? "🔵 Coinbase" : c.name}
-          </button>
-        ))}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          {connectors.slice(0, 2).map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleConnect(c)}
+              disabled={isConnecting}
+              style={{
+                padding: "10px 20px",
+                borderRadius: 10,
+                background: "rgba(0,200,100,0.12)",
+                border: "1px solid rgba(0,200,100,0.35)",
+                color: "#00e87a",
+                fontFamily: "'Courier New', monospace",
+                fontSize: 12,
+                cursor: isConnecting ? "wait" : "pointer",
+                fontWeight: "bold",
+                letterSpacing: 1,
+                transition: "all 0.2s",
+                opacity: isConnecting ? 0.7 : 1,
+              }}
+            >
+              {c.name === "Injected" ? "🦊 MetaMask" : c.name === "Coinbase Wallet" ? "🔵 Coinbase" : c.name}
+            </button>
+          ))}
+        </div>
+        {(connectError || localError) && (
+          <div style={{
+            marginTop: 8,
+            color: "#ff6b6b",
+            fontSize: 12,
+            textAlign: "center",
+            maxWidth: 280,
+            lineHeight: 1.4,
+          }}>
+            {localError ?? connectError?.message}
+          </div>
+        )}
       </div>
     );
   }
