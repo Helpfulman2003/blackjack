@@ -2,6 +2,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useWriteContract, useAccount, useConnect } from "wagmi";
 import { BLACKJACK_ABI, CONTRACT_ADDRESS } from "@/lib/contract";
+import { Attribution } from "ox/erc8021";
+
+const BUILDER_DATA_SUFFIX = Attribution.toDataSuffix({
+  codes: ["bc_wb6snu6s"],
+});
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Card {
@@ -277,6 +282,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
           abi: BLACKJACK_ABI,
           functionName: "payGameStart",
           value: BigInt(300000000000), // 0.0000003 ETH in wei
+          dataSuffix: BUILDER_DATA_SUFFIX,
         });
         showToast("✅ Start payment confirmed!");
       } catch (err: any) {
@@ -598,6 +604,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
             abi: BLACKJACK_ABI,
             functionName: "payGameEnd",
             value: BigInt(300000000000), // 0.0000003 ETH in wei
+            dataSuffix: BUILDER_DATA_SUFFIX,
           });
           showToast("✅ End payment confirmed!");
         } catch (err) {
