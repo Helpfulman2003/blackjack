@@ -18,7 +18,7 @@ export default function WalletButton() {
     try {
       await connect({ connector });
     } catch {
-      setLocalError("❌ Không thể mở MetaMask. Hãy kiểm tra extension và thử lại.");
+      setLocalError("❌ Could not open MetaMask. Please check the extension.");
     }
   };
 
