@@ -222,7 +222,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
   useEffect(() => {
     if (phase === "betting" && balance < 5 && wager === 0) {
       setBalance(500);
-      setToast("Tự động nạp lại 500 chip!");
+      setToast("Auto-refilled 500 chips!");
       setTimeout(() => setToast(""), 2500);
     }
   }, [phase, balance, wager]);
@@ -255,7 +255,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
     if (!walletReady) {
       const injectedConnector = connectors.find((c) => c.name === "Injected");
       if (!injectedConnector) {
-        showToast("❌ MetaMask không khả dụng trong trình duyệt.");
+        showToast("❌ MetaMask not available in browser.");
         return;
       }
 
@@ -264,7 +264,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
         walletReady = true;
       } catch (err) {
         console.error("Wallet connect failed:", err);
-        showToast("❌ Không thể mở MetaMask. Hãy kiểm tra extension và thử lại.");
+        showToast("❌ Could not open MetaMask. Please check the extension.");
         return;
       }
     }
