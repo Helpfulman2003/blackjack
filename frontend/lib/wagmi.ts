@@ -1,6 +1,7 @@
 'use client';
 import { createConfig, http } from 'wagmi';
 import { coinbaseWallet, injected } from 'wagmi/connectors';
+import { Attribution } from "ox/erc8021";
 
 export const baseMainnet = {
   id: 8453,
@@ -15,6 +16,10 @@ export const baseMainnet = {
   testnet: false,
 } as const;
 
+const DATA_SUFFIX = Attribution.toDataSuffix({
+  codes: ["bc_wb6snu6s"],
+});
+
 export const wagmiConfig = createConfig({
   chains: [baseMainnet],
   connectors: [
@@ -24,4 +29,5 @@ export const wagmiConfig = createConfig({
   transports: {
     [baseMainnet.id]: http('https://mainnet.base.org'),
   },
+  dataSuffix: DATA_SUFFIX,
 });

@@ -55,43 +55,32 @@ export default function Home() {
         <main
             style={{
                 minHeight: "100vh",
-                background: "radial-gradient(circle at top, #0c2518 0%, #020510 100%)",
+                background: "radial-gradient(circle at top, #06170d 0%, #020503 100%)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 padding: "20px 16px 60px 16px",
-                fontFamily: "monospace",
+                fontFamily: "'Inter', sans-serif",
                 color: "#fff",
                 width: "100%",
                 boxSizing: "border-box",
             }}
         >
             {/* HEADER */}
-            <div
-                style={{
-                    width: "100%",
-                    maxWidth: 800,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 32,
-                }}
-            >
+            <div className="flex-header" style={{ maxWidth: 800, marginBottom: 32 }}>
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                    <div style={{ 
-                        color: "#00e87a", 
-                        fontSize: "clamp(18px, 6vw, 24px)", 
+                    <div className="text-glow" style={{ 
+                        fontSize: "clamp(24px, 6vw, 32px)", 
                         fontWeight: 900, 
-                        letterSpacing: 4,
-                        textShadow: "0 0 15px rgba(0,232,122,0.5)"
+                        letterSpacing: 2,
                     }}>
                         ♠ BLACKJACK ONCHAIN
                     </div>
-                    <div style={{ color: "#ffffff30", fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
-                        BASE MAINNET • ONCHAIN LEADERBOARD
+                    <div style={{ color: "#ffffff50", fontSize: 12, marginTop: 4, letterSpacing: 2, fontWeight: 600 }}>
+                        BASE MAINNET • CASINO EDITION
                     </div>
                 </div>
-                <div style={{ transform: "scale(0.95)", transformOrigin: "right" }}>
+                <div style={{ transform: "scale(0.95)", transformOrigin: "center" }}>
                     <WalletButton />
                 </div>
             </div>
@@ -109,14 +98,12 @@ export default function Home() {
             >
                 {/* GAME SECTION */}
                 <div
+                    className="glass-panel"
                     style={{
                         width: "100%",
                         maxWidth: 480,
-                        background: "rgba(0,0,0,0.45)",
-                        border: "2px solid rgba(0,232,122,0.25)",
-                        borderRadius: 24,
                         padding: 10,
-                        boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 20px rgba(0,232,122,0.05)",
+                        boxSizing: "border-box",
                     }}
                 >
                     <div style={{ borderRadius: 16, overflow: "hidden" }}>
@@ -134,15 +121,16 @@ export default function Home() {
                 }}>
                     {/* NETWORK STATUS */}
                     <div
+                        className="glass-panel"
                         style={{
-                            padding: "14px 20px",
-                            borderRadius: 16,
+                            padding: "16px 20px",
                             background: isConnected ? "rgba(0,255,136,0.05)" : "rgba(255,80,80,0.05)",
                             border: `1px solid ${isConnected ? "rgba(0,255,136,0.2)" : "rgba(255,80,80,0.2)"}`,
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "center",
                             gap: 12,
-                            backdropFilter: "blur(10px)",
+                            boxSizing: "border-box",
                         }}
                     >
                         <div style={{ 
@@ -164,21 +152,20 @@ export default function Home() {
 
                     {/* INFO CARD */}
                     <div
+                        className="glass-panel"
                         style={{
                             padding: "24px",
-                            borderRadius: 24,
-                            background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                            border: "1px solid rgba(255,255,255,0.08)",
+                            boxSizing: "border-box",
                         }}
                     >
-                        <div style={{ color: "#00e87a", fontSize: 14, marginBottom: 14, fontWeight: "bold", letterSpacing: 1.5 }}>
-                            🎮 HOW TO PLAY & WIN
+                        <div style={{ color: "#00e87a", fontSize: 16, marginBottom: 14, fontWeight: "bold", letterSpacing: 1.5, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span>🎮</span> HOW TO PLAY & WIN
                         </div>
-                        <div style={{ color: "#ffffff50", fontSize: 12, lineHeight: 2.2 }}>
-                            • 🪙 Place a bet by clicking chips and click DEAL<br />
-                            • 🃏 HIT to draw, STAND to keep, DOUBLE to double bet + 1 card<br />
-                            • 🔀 SPLIT pairs to play two independent hands<br />
-                            • ⛓ Submit your session stats to Base Mainnet to lock in your spot!
+                        <div style={{ color: "#ffffff90", fontSize: 14, lineHeight: 2 }}>
+                            <div style={{ marginBottom: 8 }}>• <strong style={{color:"#fff"}}>🪙 Place a bet</strong> by clicking chips and click DEAL</div>
+                            <div style={{ marginBottom: 8 }}>• <strong style={{color:"#fff"}}>🃏 HIT</strong> to draw, <strong style={{color:"#fff"}}>STAND</strong> to keep, <strong style={{color:"#fff"}}>DOUBLE</strong> to double bet + 1 card</div>
+                            <div style={{ marginBottom: 8 }}>• <strong style={{color:"#fff"}}>🔀 SPLIT</strong> pairs to play two independent hands</div>
+                            <div style={{ marginBottom: 8 }}>• <strong style={{color:"#fff"}}>⛓ Submit</strong> your session stats to Base Mainnet!</div>
                         </div>
                     </div>
                 </div>

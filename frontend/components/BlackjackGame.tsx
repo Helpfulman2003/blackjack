@@ -68,7 +68,7 @@ function CardUI({ card, hidden }: { card: Card; hidden?: boolean }) {
         <div style={{ width: "100%", height: "100%", borderRadius: 8,
           background: "repeating-linear-gradient(45deg,#0f4d2a,#0f4d2a 6px,#0a3a1e 6px,#0a3a1e 12px)",
           display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 28, color: "rgba(255,255,255,0.25)" }}>♟</span>
+          <span style={{ fontSize: "clamp(18px, 4vw, 28px)", color: "rgba(255,255,255,0.25)" }}>♟</span>
         </div>
       </div>
     );
@@ -76,22 +76,22 @@ function CardUI({ card, hidden }: { card: Card; hidden?: boolean }) {
   const red = isRed(card);
   const color = red ? "#c0001c" : "#111";
   return (
-    <div style={{ ...cardBase, background: "#fff", padding: "5px 6px",
+    <div style={{ ...cardBase, background: "#fff", padding: "4px 6px",
       display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-      <div style={{ color, fontSize: 14, fontWeight: 900, lineHeight: 1 }}>
+      <div style={{ color, fontSize: "clamp(12px, 3vw, 14px)", fontWeight: 900, lineHeight: 1 }}>
         <div>{card.rank}</div>
-        <div style={{ fontSize: 12 }}>{card.suit}</div>
+        <div style={{ fontSize: "clamp(10px, 2.5vw, 12px)" }}>{card.suit}</div>
       </div>
-      <div style={{ color, fontSize: 26, textAlign: "center", lineHeight: 1, fontWeight: 900 }}>{card.suit}</div>
-      <div style={{ color, fontSize: 14, fontWeight: 900, lineHeight: 1, transform: "rotate(180deg)", textAlign: "left" }}>
+      <div style={{ color, fontSize: "clamp(20px, 5vw, 26px)", textAlign: "center", lineHeight: 1, fontWeight: 900 }}>{card.suit}</div>
+      <div style={{ color, fontSize: "clamp(12px, 3vw, 14px)", fontWeight: 900, lineHeight: 1, transform: "rotate(180deg)", textAlign: "left" }}>
         <div>{card.rank}</div>
-        <div style={{ fontSize: 12 }}>{card.suit}</div>
+        <div style={{ fontSize: "clamp(10px, 2.5vw, 12px)" }}>{card.suit}</div>
       </div>
     </div>
   );
 }
 const cardBase: React.CSSProperties = {
-  width: 62, height: 92, borderRadius: 9, flexShrink: 0,
+  width: "clamp(45px, 11vw, 62px)", height: "clamp(66px, 16vw, 92px)", borderRadius: 9, flexShrink: 0,
   border: "2px solid rgba(255,255,255,0.85)",
   boxShadow: "0 6px 18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.4)",
   overflow: "hidden", transition: "transform 0.15s",
@@ -114,7 +114,7 @@ function Hand({ cards, hideSecond, label, total, dim }:
           {displayTotal}
         </span>
       </div>
-      <div style={{ display: "flex", gap: -10, flexWrap: "nowrap", overflowX: "auto" }}>
+      <div className="no-scrollbar" style={{ display: "flex", gap: -10, flexWrap: "nowrap", overflowX: "auto", paddingBottom: "10px" }}>
         {cards.map((card, i) => (
           <div key={card.id} style={{ marginLeft: i === 0 ? 0 : -16,
             animation: "dealIn 0.3s ease-out", zIndex: i }}>
@@ -138,13 +138,13 @@ function Chip({ value, onClick, disabled }: { value: number; onClick: () => void
   const [from, to] = colors[value] ?? ["#555","#333"];
   return (
     <button onClick={onClick} disabled={disabled} style={{
-      width: 54, height: 54, borderRadius: "50%",
-      background: disabled ? "#333" : `linear-gradient(145deg, ${from}, ${to})`,
-      border: "3px solid rgba(255,255,255,0.25)",
-      boxShadow: disabled ? "none" : `0 4px 14px ${from}66, inset 0 1px 0 rgba(255,255,255,0.3)`,
-      color: "#fff", fontWeight: 900, fontSize: 13,
+      width: "clamp(46px, 11vw, 54px)", height: "clamp(46px, 11vw, 54px)", borderRadius: "50%",
+      background: disabled ? "#333" : `radial-gradient(circle at 30% 30%, ${from}, ${to})`,
+      border: "3px dashed rgba(255,255,255,0.4)",
+      boxShadow: disabled ? "none" : `0 6px 14px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.5), 0 0 10px ${from}66`,
+      color: "#fff", fontWeight: 900, fontSize: "clamp(12px, 3vw, 14px)",
       cursor: disabled ? "not-allowed" : "pointer",
-      fontFamily: "monospace", transition: "all 0.15s",
+      fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
       opacity: disabled ? 0.4 : 1,
       outline: "none",
     }}>
@@ -217,6 +217,15 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
   useEffect(() => {
     localStorage.setItem("bjBalance", String(balance));
   }, [balance]);
+
+  // Auto-reset balance if out of money
+  useEffect(() => {
+    if (phase === "betting" && balance < 5 && wager === 0) {
+      setBalance(500);
+      setToast("Tự động nạp lại 500 chip!");
+      setTimeout(() => setToast(""), 2500);
+    }
+  }, [phase, balance, wager]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -616,17 +625,13 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
 
   // ── UI ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{
+    <div className="casino-felt" style={{
       minHeight: "100%", width: "100%",
-      background: "radial-gradient(ellipse at top, #0d3320 0%, #071a0e 100%)",
-      borderRadius: 20, padding: "20px 16px", fontFamily: "monospace",
+      borderRadius: 20, padding: "20px 16px", fontFamily: "'Inter', sans-serif",
       display: "flex", flexDirection: "column", gap: 16, position: "relative",
-      overflow: "hidden",
+      overflow: "hidden", boxSizing: "border-box",
     }}>
-      {/* Felt texture lines */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
-        backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px)",
-        borderRadius: 20 }} />
+
 
       {/* Toast */}
       {toast && (
@@ -735,7 +740,7 @@ export default function BlackjackGame({ onSessionEnd }: Props) {
                 : "rgba(255,255,255,0.05)",
               border: "none", borderRadius: 10,
               color: wager > 0 ? "#001a0d" : "#ffffff30",
-              fontFamily: "monospace", fontSize: 15, fontWeight: 900,
+              fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 900,
               cursor: wager > 0 ? "pointer" : "not-allowed",
               letterSpacing: 2, boxShadow: wager > 0 ? "0 4px 20px rgba(0,232,122,0.35)" : "none",
               transition: "all 0.2s",
